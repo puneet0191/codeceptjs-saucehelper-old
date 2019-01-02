@@ -2,7 +2,6 @@
 
 // use any assertion library you like
 let request = require('request');
-const container = require('codeceptjs').container;
 
 /**
  * Sauce Labs Helper for Codeceptjs
@@ -56,7 +55,7 @@ class SauceHelper extends Helper {
      */
     _passed (test) {
         console.log ("Test has Passed");
-        var sessionId = container.helpers().WebDriverIO.browser.requestHandler.sessionID;
+        const sessionId = this._getSessionId();
         this._updateSauceJob(sessionId, {"passed": true, "name": test.title});
     }
 
@@ -68,8 +67,21 @@ class SauceHelper extends Helper {
      */
     _failed (test, error) {
         console.log ("Test has failed");
-        var sessionId = container.helpers().WebDriverIO.browser.requestHandler.sessionID;
+        const sessionId = this._getSessionId();
         this._updateSauceJob(sessionId, {"passed": false, "name": test.title});
+    }
+    
+    _getSessionId() {
+        if (this.helpers['WebDriver']) {
+            return this.helpers['WebDriver'].browser.sessionId;
+        }
+        if (this.helpers['Appium']) {
+            return this.helpers['Appium'].browser.sessionId;
+        }
+        if (this.helpers['WebDriverIO']) {
+            return this.helpers['WebDriverIO'].browser.requestHandler.sessionID;
+        }        
+        throw new Error('No matching helper found. Supported helpers: WebDriver/Appium/WebDriverIO');
     }
 }
 
